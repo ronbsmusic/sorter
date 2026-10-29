@@ -43,12 +43,14 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const REDIR=location.origin+location.pathname,sleep=ms=>new Promise(z=>setTimeout(z,ms));
 const b64=b=>btoa(String.fromCharCode.apply(null,new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 let tt;function toast(m,e){const t=$('#toast');t.textContent=m;t.className='show'+(e?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2400)}
-const msg=(t,btn)=>$('#app').innerHTML=`<div class="card">${esc(t)}${btn?'<p><button class="btn sm" onclick="reset()">התחבר מחדש</button></p>':''}</div>`;
+const msg=(t,btn)=>$('#app').innerHTML=`<div class="card">${esc(t)}${btn?'<p><button class="btn sm" onclick="reset()">התחבר מחדש</button></p>':''}<div class="mut" style="margin-top:8px">גרסה 4</div></div>`;
 function reset(){LS.removeItem('tok');LS.removeItem('rt');location=REDIR}
 
 /* ---------- auth ---------- */
 async function tokReq(p){
-  const r=await fetch(TOK,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(p)});
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),20000);let r;
+  try{r=await fetch(TOK,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(p)})}
+  catch(e){throw Error('אין תגובה משרת ההתחברות של ספוטיפיי')}finally{clearTimeout(to)}
   const j=await r.json();if(!j.access_token)throw Error(j.error_description||j.error||'auth');
   LS.tok=j.access_token;LS.exp=Date.now()+(j.expires_in-60)*1000;if(j.refresh_token)LS.rt=j.refresh_token;
 }
@@ -69,31 +71,36 @@ async function api(p,o={}){
     const ac=new AbortController(),to=setTimeout(()=>ac.abort(),30000);let r;
     try{r=await fetch(p.startsWith('http')?p:'https://api.spotify.com/v1'+p,{...o,signal:ac.signal,headers:{Authorization:'Bearer '+LS.tok,'Content-Type':'application/json'}})}
     catch(e){throw Error('אין תגובה מספוטיפיי, בדוק חיבור ונסה שוב')}finally{clearTimeout(to)}
-    if(r.status==429){const w=+r.headers.get('Retry-After')||2;if(w>90)throw Error('ספוטיפיי הגבילה זמנית את הבקשות. נסה שוב בעוד '+Math.ceil(w/60)+' דקות');toast('הגבלת קצב, ממתין '+w+' שניות');await sleep(w*1000);continue}
+    if(r.status==429){const w=(+r.headers.get('Retry-After')||2)+1;if(k>8)throw Error('ספוטיפיי ממשיכה להגביל. נסה שוב בעוד כמה דקות');setProg('ספוטיפיי מאטה · ממתין '+w+' שניות');if(w>90)throw Error('ספוטיפיי הגבילה זמנית את הבקשות. נסה שוב בעוד '+Math.ceil(w/60)+' דקות');await sleep(w*1000);continue}
     if(r.status==401&&k<2){LS.exp=0;continue}
     if(!r.ok)throw Error(r.status);
     return r.status==204?null:r.json();
   }
 }
-async function pages(p){const o=[];let u=p;while(u){const j=await api(u);o.push(...j.items);u=j.next}return o}
+const setProg=t=>{S.prog=t;const e=$('#prog');if(e)e.textContent=t};
+async function pages(p,lb){const o=[];let u=p;while(u){const j=await api(u);o.push(...j.items);u=j.next;if(lb)setProg(lb+': '+o.length+(j.total?' / '+j.total:''))}return o}
 const mapT=t=>({id:t.id,n:t.name,a:(t.artists||[]).map(a=>a.name).join(', '),ar:(t.artists||[]).map(a=>a.name),ai:(t.artists||[]).map(a=>a.id),y:+((t.album&&t.album.release_date)||'0').slice(0,4)});
-async function plTracks(id){
-  let it;try{it=await pages(`/playlists/${id}/items?limit=100`)}catch(e){it=await pages(`/playlists/${id}/tracks?limit=100`)}
+async function plTracks(id,lb){
+  let it;try{it=await pages(`/playlists/${id}/items?limit=100`,lb)}catch(e){it=await pages(`/playlists/${id}/tracks?limit=100`,lb)}
   return it.map(x=>x&&(x.item||x.track)).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);
 }
 
 /* ---------- data ---------- */
 async function load(quiet){
-  S.busy=1;
+  if(S.loading)return;S.loading=1;S.noLiked='';S.prog='';
+  const mk1=p=>({id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)}),fin=o=>{o.s=new Set(o.t.map(x=>x.id));return o};
   try{
-    S.noLiked='';if(!quiet)msg('טוען פלייליסטים…');const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
-    await Promise.all([0,1,2].map(async()=>{while(i<pls.length){const k=i++,p=pls[k],o={id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)};
+    if(!quiet)msg('טוען פלייליסטים…');
+    const all=(await pages('/me/playlists?limit=50')).filter(Boolean),reg=all.filter(p=>!/shazam/i.test(p.name)),shz=all.filter(p=>/shazam/i.test(p.name)),out=[];let i=0;
+    await Promise.all([0,1].map(async()=>{while(i<reg.length){const p=reg[i++],o=mk1(p);
       try{o.t=await plTracks(p.id)}catch(e){o.err=e.message}
-      o.s=new Set(o.t.map(x=>x.id));out[k]=o;n++;if(!quiet)msg(`טוען ${n}/${pls.length} · ${p.name}`)}}));
-    if(!quiet)msg('טוען Liked Songs…');const lk=await pages('/me/tracks?limit=50').catch(e=>{S.noLiked=e.message;return null});if(lk){const t=lk.map(x=>x&&x.track).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);out.push({id:'liked',name:'❤ Liked Songs',t,s:new Set(t.map(x=>x.id)),liked:true})}
-    S.pls=out;S.t0=Date.now();recalc();
-  }catch(e){S.busy=0;if(!quiet)return msg('שגיאה: '+e.message,1);toast('הרענון נכשל',1)}
-  S.busy=0;render();
+      out.push(fin(o));if(!quiet)msg(`טוען ${out.length}/${reg.length} · ${p.name}`)}}));
+    S.pls=out;S.t0=Date.now();recalc();render();
+    for(const p of shz){const o=mk1(p);try{o.t=await plTracks(p.id,'Shazam')}catch(e){o.err=e.message}S.pls.push(fin(o))}
+    try{const lk=await pages('/me/tracks?limit=50','Liked Songs'),t=lk.map(x=>x&&x.track).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);S.pls.push({id:'liked',name:'❤ Liked Songs',t,s:new Set(t.map(x=>x.id)),liked:true})}catch(e){S.noLiked=e.message}
+    recalc();S.t0=Date.now();
+  }catch(e){if(!S.pls.length){S.loading=0;return msg('שגיאה: '+e.message,1)}toast(e.message,1)}
+  S.loading=0;render();
 }
 function recalc(){
   const m=S.main=S.pls.filter(p=>!p.shz&&!p.liked);S.W={};S.info={};S.A={};
@@ -275,12 +282,12 @@ function viewArt(){
 function render(){
   const y=scrollY,v={ov:viewOv,ar:viewArt,du:viewDup,so:viewSort}[S.tab]();
   const tm=S.t0?new Date(S.t0).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'';
-  $('#app').innerHTML=`<header><div><h1>🎧 Playlist Sorter</h1><span class="mut">${S.main.length} פלייליסטים · עודכן ${tm}</span></div><button class="btn sm" onclick="load(true)">↻ רענן</button></header>
+  $('#app').innerHTML=`<header><div><h1>🎧 Playlist Sorter</h1><span class="mut">${S.main.length} פלייליסטים · עודכן ${tm}</span></div><button class="btn sm" onclick="load(true)">↻ רענן</button></header>${S.loading?`<div class="card mut" id="prog">${esc(S.prog||'טוען ברקע…')}</div>`:''}
   <div class="tabs">${[['ov','סקירה'],['ar','אמנים'],['du','כפילויות'],['so','מיון']].map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${n}</button>`).join('')}</div>${v}`;
   const c=$('#sw');if(c&&!S.pick){let x=0;c.ontouchstart=e=>{x=e.touches[0].clientX};c.ontouchend=e=>{const d=e.changedTouches[0].clientX-x;if(Math.abs(d)>100)d>0?keep():go('rej')}}
   scrollTo(0,y);
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.t0&&!S.busy&&Date.now()-S.t0>180000)load(true)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.t0&&!S.busy&&!S.loading&&Date.now()-S.t0>180000)load(true)});
 
 /* ---------- start ---------- */
 (async()=>{
