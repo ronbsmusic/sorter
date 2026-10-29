@@ -66,8 +66,10 @@ async function useCode(){
 async function api(p,o={}){
   for(let k=0;;k++){
     await ensure();
-    const r=await fetch(p.startsWith('http')?p:'https://api.spotify.com/v1'+p,{...o,headers:{Authorization:'Bearer '+LS.tok,'Content-Type':'application/json'}});
-    if(r.status==429){await sleep((+r.headers.get('Retry-After')||2)*1000);continue}
+    const ac=new AbortController(),to=setTimeout(()=>ac.abort(),30000);let r;
+    try{r=await fetch(p.startsWith('http')?p:'https://api.spotify.com/v1'+p,{...o,signal:ac.signal,headers:{Authorization:'Bearer '+LS.tok,'Content-Type':'application/json'}})}
+    catch(e){throw Error('אין תגובה מספוטיפיי, בדוק חיבור ונסה שוב')}finally{clearTimeout(to)}
+    if(r.status==429){const w=+r.headers.get('Retry-After')||2;if(w>90)throw Error('ספוטיפיי הגבילה זמנית את הבקשות. נסה שוב בעוד '+Math.ceil(w/60)+' דקות');toast('הגבלת קצב, ממתין '+w+' שניות');await sleep(w*1000);continue}
     if(r.status==401&&k<2){LS.exp=0;continue}
     if(!r.ok)throw Error(r.status);
     return r.status==204?null:r.json();
@@ -84,11 +86,11 @@ async function plTracks(id){
 async function load(quiet){
   S.busy=1;
   try{
-    S.noLiked='';const likedP=pages('/me/tracks?limit=50').catch(e=>{S.noLiked=e.message;return null});const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
-    await Promise.all([0,1,2,3].map(async()=>{while(i<pls.length){const k=i++,p=pls[k],o={id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)};
+    S.noLiked='';if(!quiet)msg('טוען פלייליסטים…');const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
+    await Promise.all([0,1,2].map(async()=>{while(i<pls.length){const k=i++,p=pls[k],o={id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)};
       try{o.t=await plTracks(p.id)}catch(e){o.err=e.message}
       o.s=new Set(o.t.map(x=>x.id));out[k]=o;n++;if(!quiet)msg(`טוען ${n}/${pls.length} · ${p.name}`)}}));
-    const lk=await likedP;if(lk){const t=lk.map(x=>x&&x.track).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);out.push({id:'liked',name:'❤ Liked Songs',t,s:new Set(t.map(x=>x.id)),liked:true})}
+    if(!quiet)msg('טוען Liked Songs…');const lk=await pages('/me/tracks?limit=50').catch(e=>{S.noLiked=e.message;return null});if(lk){const t=lk.map(x=>x&&x.track).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);out.push({id:'liked',name:'❤ Liked Songs',t,s:new Set(t.map(x=>x.id)),liked:true})}
     S.pls=out;S.t0=Date.now();recalc();
   }catch(e){S.busy=0;if(!quiet)return msg('שגיאה: '+e.message,1);toast('הרענון נכשל',1)}
   S.busy=0;render();
