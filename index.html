@@ -37,7 +37,7 @@ label{display:flex;align-items:center;color:var(--mut);font-size:14px;margin-top
 <script>
 const LS=localStorage,$=s=>document.querySelector(s),TOK='https://accounts.spotify.com/api/token';
 const J=(k,d)=>{try{return JSON.parse(LS[k]||d)}catch(e){return JSON.parse(d)}};
-const S={tab:'ov',pls:[],main:[],W:{},info:{},cur:null,pick:false,only:true,busy:0,hist:[],dn:40,q:'',src:'',t0:0,rej:J('rej','{}'),skp:J('skp','{}')};
+const S={tab:'ov',pls:[],main:[],W:{},info:{},cur:null,pick:false,only:true,busy:0,hist:[],dn:40,q:'',src:'',t0:0,rej:J('rej','{}'),skp:J('skp','{}'),G:{},A:{},kb:J('kb','{}'),aq:'',art:'',noLiked:''};
 const save=()=>{LS.rej=JSON.stringify(S.rej);LS.skp=JSON.stringify(S.skp)};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const REDIR=location.origin+location.pathname,sleep=ms=>new Promise(z=>setTimeout(z,ms));
@@ -57,7 +57,7 @@ async function login(){
   LS.cid=$('#cid').value.trim();const v=b64(crypto.getRandomValues(new Uint8Array(48)));LS.ver=v;
   const ch=b64(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
   location=`https://accounts.spotify.com/authorize?`+new URLSearchParams({client_id:LS.cid,response_type:'code',redirect_uri:REDIR,
-   scope:'playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public',code_challenge_method:'S256',code_challenge:ch});
+   scope:'playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read',code_challenge_method:'S256',code_challenge:ch});
 }
 async function useCode(){
   try{const o=JSON.parse(atob($('#cc').value.trim()));LS.cid=o.c;LS.rt=o.r;LS.removeItem('tok');msg('מתחבר…');await load()}
@@ -74,43 +74,45 @@ async function api(p,o={}){
   }
 }
 async function pages(p){const o=[];let u=p;while(u){const j=await api(u);o.push(...j.items);u=j.next}return o}
+const mapT=t=>({id:t.id,n:t.name,a:(t.artists||[]).map(a=>a.name).join(', '),ar:(t.artists||[]).map(a=>a.name),ai:(t.artists||[]).map(a=>a.id),y:+((t.album&&t.album.release_date)||'0').slice(0,4)});
 async function plTracks(id){
   let it;try{it=await pages(`/playlists/${id}/items?limit=100`)}catch(e){it=await pages(`/playlists/${id}/tracks?limit=100`)}
-  return it.map(x=>x&&(x.item||x.track)).filter(t=>t&&t.id&&t.type!=='episode').map(t=>({id:t.id,n:t.name,a:(t.artists||[]).map(a=>a.name).join(', ')}));
+  return it.map(x=>x&&(x.item||x.track)).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);
 }
 
 /* ---------- data ---------- */
 async function load(quiet){
   S.busy=1;
   try{
-    const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
+    S.noLiked='';const likedP=pages('/me/tracks?limit=50').catch(e=>{S.noLiked=e.message;return null});const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
     await Promise.all([0,1,2,3].map(async()=>{while(i<pls.length){const k=i++,p=pls[k],o={id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)};
       try{o.t=await plTracks(p.id)}catch(e){o.err=e.message}
       o.s=new Set(o.t.map(x=>x.id));out[k]=o;n++;if(!quiet)msg(`טוען ${n}/${pls.length} · ${p.name}`)}}));
+    const lk=await likedP;if(lk){const t=lk.map(x=>x&&x.track).filter(t=>t&&t.id&&t.type!=='episode').map(mapT);out.push({id:'liked',name:'❤ Liked Songs',t,s:new Set(t.map(x=>x.id)),liked:true})}
     S.pls=out;S.t0=Date.now();recalc();
   }catch(e){S.busy=0;if(!quiet)return msg('שגיאה: '+e.message,1);toast('הרענון נכשל',1)}
   S.busy=0;render();
 }
 function recalc(){
-  const m=S.main=S.pls.filter(p=>!p.shz);S.W={};S.info={};
+  const m=S.main=S.pls.filter(p=>!p.shz&&!p.liked);S.W={};S.info={};S.A={};
+  S.pls.forEach(p=>p.t.forEach(t=>t.ar.forEach(n=>{const k=n.toLowerCase(),a=S.A[k]||(S.A[k]={n,t:{},c:0});if(!a.t[t.id]){a.t[t.id]=t;a.c++}})));
   m.forEach(p=>p.t.forEach(t=>{(S.W[t.id]=S.W[t.id]||new Set()).add(p);S.info[t.id]=t}));
   m.forEach(p=>{let ov=0,bn=0;p.best=null;p.t.forEach(t=>{if(S.W[t.id].size>1)ov++});
     m.forEach(q=>{if(q===p)return;let n=0;p.s.forEach(x=>{if(q.s.has(x))n++});if(n>bn){bn=n;p.best=q.name}});
     p.ovf=p.t.length?ov/p.t.length:0});
 }
+const BIG=/old ?school|אולד סקול|oldies|classics|קלאסיקה|favorites|הכל/i;
 function health(p){
-  const n=p.t.length,pc=Math.round(p.ovf*100);
-  let s=100-Math.min(60,Math.max(0,n-120)/6)-p.ovf*40-(n<10?20:0);s=Math.max(0,Math.round(s));
-  const r=[];
-  if(n>350)r.push(`ענק: ${n} שירים. מומלץ לפצל ל-${Math.ceil(n/120)} פלייליסטים של כ-120 שירים (לפי וייב או תקופה), ולהשאיר בראשון רק את הליבה.`);
-  else if(n>200)r.push(`ארוך (${n}). כדאי לפצל לשניים לפי וייב, או להוציא שירים שלא שמעת הרבה זמן.`);
-  if(p.ovf>.4&&p.best)r.push(`${pc}% מהשירים כבר נמצאים בפלייליסטים אחרים, בעיקר ב"${p.best}". שקול לאחד אותם, או להשאיר כל שיר במקום אחד בלבד (לשונית כפילויות).`);
-  else if(p.ovf>.2)r.push(`${pc}% מהשירים מופיעים גם בפלייליסטים אחרים. בדוק בלשונית כפילויות מה אפשר להסיר.`);
-  if(n<15)r.push('קטן מאוד. שקול למזג עם פלייליסט דומה'+(p.best?` (למשל "${p.best}")`:'')+'.');
-  if(!r.length)r.push('במצב טוב, אין צורך בשינוי.');
-  return{s,r,c:s>=80?'#1ed760':s>=60?'#a3d95c':s>=40?'#ffb454':'#ff6b6b',l:s>=80?'מצוין':s>=60?'טוב':s>=40?'דורש שיפור':'מומלץ לפצל או לשנות'};
+  const n=p.t.length,pc=Math.round(p.ovf*100),big=BIG.test(p.name)||S.kb[p.id];
+  const s=Math.max(0,Math.round(100-(big?0:Math.min(60,Math.max(0,n-120)/6))-p.ovf*40-(n<10?20:0)));
+  let r;
+  if(!big&&n>200)r=`ארוך מדי · כדאי לפצל ל-${Math.ceil(n/120)} פלייליסטים`;
+  else if(p.ovf>.4&&p.best)r=`הרבה כפילויות · כדאי לאחד עם "${p.best}"`;
+  else if(p.ovf>.2)r=`${pc}% כפילויות · ראה לשונית כפילויות`;
+  else if(n<15)r='קטן מאוד · כדאי לאחד עם פלייליסט דומה';
+  else r=big&&n>200?'גדול בכוונה · בדוק מה לא משתלב':'תקין';
+  return{s,r,big,c:s>=80?'#1ed760':s>=60?'#a3d95c':s>=40?'#ffb454':'#ff6b6b'};
 }
-
 /* ---------- playlist edits ---------- */
 async function mk(name){
   const body=JSON.stringify({name,public:false,description:'Playlist Sorter'});let p;
@@ -127,7 +129,7 @@ async function rem(p,t){const u='spotify:track:'+t.id;
 async function rmFrom(tid,pid){
   const p=S.pls.find(x=>x.id==pid),t=S.info[tid];if(!p||!t||S.busy)return;
   if(!confirm(`להסיר את "${t.n}" מהפלייליסט "${p.name}"?`))return;
-  S.busy=1;try{await rem(p,t);recalc();toast('הוסר ✓')}catch(e){toast('שגיאה: '+e.message,1)}S.busy=0;render();
+  S.busy=1;try{await rem(p,t);if(p.out)p.out=p.out.filter(x=>x.id!=tid);recalc();toast('הוסר ✓')}catch(e){toast('שגיאה: '+e.message,1)}S.busy=0;render();
 }
 async function tgl(pid){
   const p=S.pls.find(x=>x.id==pid),t=S.cur;if(!p||!t||S.busy)return;S.busy=1;
@@ -144,7 +146,7 @@ async function newPl(){
 function source(){return S.pls.find(p=>p.id==S.src)||S.pls.find(p=>p.shz)||S.pls[0]}
 function queue(){
   const src=source(),seen={};if(!src)return[];
-  return src.t.filter(t=>{if(seen[t.id]||S.rej[t.id]||S.skp[t.id])return false;seen[t.id]=1;return !(S.only&&src.shz)||!S.W[t.id]});
+  return src.t.filter(t=>{if(seen[t.id]||S.rej[t.id]||S.skp[t.id])return false;seen[t.id]=1;return !(S.only&&(src.shz||src.liked))||!S.W[t.id]});
 }
 const go=k=>{const t=S.cur;if(!t)return;if(k=='rej')S.rej[t.id]=1;else S.skp[t.id]=1;S.hist.push({t});S.cur=null;S.pick=false;save();render()};
 const keep=()=>{S.pick=true;render()};
@@ -155,7 +157,7 @@ const pickHTML=()=>{const t=S.cur;return`<div class="mut">הוסף ל… (אפש
 function viewSort(){
   const src=source(),q=queue();if(!S.cur)S.cur=q[0]||null;const t=S.cur;
   const sel=`<select onchange="S.src=this.value;S.cur=null;render()">${S.pls.map(p=>`<option value="${p.id}" ${src&&p.id==src.id?'selected':''}>${esc(p.name)} (${p.t.length})</option>`).join('')}</select>
-   ${src&&src.shz?`<label><input type="checkbox" ${S.only?'checked':''} onchange="S.only=this.checked;S.cur=null;render()">רק שירים שלא נמצאים באף פלייליסט</label>`:''}`;
+   ${src&&(src.shz||src.liked)?`<label><input type="checkbox" ${S.only?'checked':''} onchange="S.only=this.checked;S.cur=null;render()">רק שירים שלא נמצאים באף פלייליסט</label>`:''}`;
   const head=`<div class="card"><div class="mut">מקור המיון · נותרו ${q.length}${src&&src.t.length?` מתוך ${src.t.length}`:''}</div>${sel}${src&&src.err?`<p class="mut" style="color:var(--w)">לא הצלחתי לקרוא את הפלייליסט הזה (שגיאה ${esc(src.err)}). ייתכן שספוטיפיי חוסמת גישה אליו. בחר פלייליסט אחר.</p>`:''}</div>`;
   if(!t)return head+'<div class="card" style="text-align:center">🎉 אין עוד שירים למיון במקור הזה</div>';
   const inn=[...(S.W[t.id]||[])].map(p=>esc(p.name)).join(' · ');
@@ -169,20 +171,23 @@ function viewSort(){
 }
 
 /* ---------- other views ---------- */
+const vibeHTML=p=>!p.vm?'':`<div class="mut" style="margin-top:8px">${esc(p.vm)}</div>`+(p.out||[]).slice(0,15).map(t=>`<div class="top" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(t.n)} <span class="mut">${esc(t.a)}</span></span><button class="chip sm" onclick="rmFrom('${t.id}','${p.id}')">הסר</button></div>`).join('')+((p.out||[]).length>15?`<div class="mut">ועוד ${p.out.length-15}…</div>`:'');
+function kb(pid){S.kb[pid]=!S.kb[pid];LS.kb=JSON.stringify(S.kb);render()}
 function viewOv(){
   const ids=Object.keys(S.W),multi=ids.filter(i=>S.W[i].size>1).length,sz=S.pls.find(p=>p.shz);
   const un=sz?Object.keys(sz.t.reduce((o,t)=>(o[t.id]=1,o),{})).filter(i=>!S.W[i]).length:0;
-  const bad=S.pls.filter(p=>p.err&&!p.shz);
+  const bad=S.pls.filter(p=>p.err&&!p.liked);
   const cards=S.main.map(p=>({p,h:health(p)})).sort((a,b)=>a.h.s-b.h.s).map(({p,h})=>
    `<div class="card"><div class="top"><b>${esc(p.name)}</b><span class="sc" style="background:${h.c}">${h.s}</span></div>
-   <div class="mut">${p.t.length} שירים · ${Math.round(p.ovf*100)}% מופיעים גם במקום אחר · ${h.l}</div>
-   <div class="bar"><i style="width:${h.s}%;background:${h.c}"></i></div><div class="rec">${h.r.map(esc).join('<br>')}</div></div>`).join('');
+   <div class="mut">${p.t.length} שירים</div><div class="rec">${esc(h.r)}</div>
+   <div class="tags" style="margin-bottom:0"><button class="chip sm" onclick="vibe('${p.id}')">🔍 מה לא משתלב?</button>${p.t.length>200&&!h.big?`<button class="chip sm" onclick="kb('${p.id}')">ארוך בכוונה</button>`:''}</div>${vibeHTML(p)}</div>`).join('');
   const code=LS.rt?btoa(JSON.stringify({c:LS.cid,r:LS.rt})):'';
   return `<div class="tiles"><div class="tile"><b>${ids.length}</b><span>שירים ייחודיים</span></div><div class="tile" onclick="S.tab='du';render()"><b>${multi}</b><span>ביותר מפלייליסט</span></div><div class="tile" onclick="S.tab='so';render()"><b>${un}</b><span>ב-Shazam לא ממוינים</span></div></div>
   ${sz&&sz.err?`<div class="card mut" style="color:var(--w)">פלייליסט ה-Shazam לא נקרא (שגיאה ${esc(sz.err)}). במסך המיון אפשר לבחור מקור אחר.</div>`:''}
+  ${S.noLiked?`<div class="card mut" style="color:var(--w)">כדי לקרוא את Liked Songs צריך להתחבר מחדש עם הרשאה חדשה. <button class="btn sm" onclick="reset()">התחבר מחדש</button></div>`:''}
   ${bad.length?`<div class="card mut">לא נקראו: ${bad.map(p=>esc(p.name)).join(', ')}</div>`:''}
-  <h2>ציון בריאות לכל פלייליסט · מהחלש לחזק</h2>${cards}
-  <details class="card"><summary>חיבור מכשיר נוסף (למשל האייפד הישן)</summary><p class="mut">העתק את הקוד והדבק אותו במסך החיבור של המכשיר השני, בלי להתחבר מחדש. הקוד פרטי, אל תשתף אותו.</p>
+  <h2>ציון לכל פלייליסט · 100 = מסודר, נמוך = כדאי לטפל</h2>${cards}
+  <details class="card"><summary>חיבור מכשיר נוסף (למשל האייפד הישן)</summary><p class="mut">העתק את הקוד והדבק אותו במסך החיבור של המכשיר השני. הקוד פרטי, אל תשתף אותו.</p>
   <textarea readonly id="cd" onclick="this.select()">${code}</textarea><p><button class="btn sm" onclick="cp()">העתק</button></p></details>`;
 }
 function cp(){const c=$('#cd');c.select();try{navigator.clipboard.writeText(c.value).then(()=>toast('הועתק ✓'))}catch(e){document.execCommand('copy');toast('הועתק ✓')}}
@@ -197,11 +202,79 @@ function viewDup(){
   <input placeholder="חיפוש שיר או אמן…" value="${esc(S.q)}" onchange="S.q=this.value;S.dn=40;render()" style="margin-top:10px"></div>${rows}
   ${ids.length>S.dn?`<button class="btn" style="width:100%;margin:0" onclick="S.dn+=40;render()">הצג עוד (${ids.length-S.dn})</button>`:''}`;
 }
+/* ---------- vibe check ---------- */
+const RULES=[{re:/france|french|צרפת|פרנצ/i,k:['french','chanson','francoton','quebec','variet']},{re:/israel|hebrew|עברית|ישראל|מזרחי/i,k:['israeli','mizrahi','hebrew']},{re:/arab|ערבית/i,k:['arab','khaleeji','egypt','lebanese','rai']},{re:/spanish|latin|ספרדית|לטינ/i,k:['latin','spanish','reggaeton','mexican']}];
+async function genres(ids){
+  const need=[...new Set(ids)].filter(i=>i&&!(i in S.G));
+  for(let i=0;i<need.length;i+=50){const c=need.slice(i,i+50),j=await api('/artists?ids='+c.join(','));c.forEach(x=>S.G[x]=[]);(j.artists||[]).forEach(a=>{if(a)S.G[a.id]=a.genres||[]})}
+}
+async function vibe(pid){
+  const p=S.pls.find(x=>x.id==pid);if(!p||S.busy)return;S.busy=1;p.vm='בודק…';p.out=null;render();
+  try{
+    const nm=p.name.toLowerCase().trim(),A=S.A[nm];let out=[],vm;
+    if(A&&A.c>=3){out=p.t.filter(t=>!t.ar.some(n=>n.toLowerCase()==nm));vm=out.length?`${out.length} שירים הם לא של ${A.n}`:`כל השירים של ${A.n} ✓`}
+    else if(/old ?school|אולד סקול/i.test(p.name)){out=p.t.filter(t=>t.y>=2010);vm=out.length?`${out.length} שירים יצאו ב-2010 ומעלה`:'כל השירים ישנים ✓'}
+    else{
+      await genres(p.t.reduce((a,t)=>a.concat(t.ai),[]));
+      const g=t=>[].concat(...t.ai.map(i=>S.G[i]||[])),cov=p.t.filter(t=>g(t).length),rule=RULES.find(r=>r.re.test(p.name));
+      if(cov.length<10)vm='ספוטיפיי לא מחזירה מספיק מידע על ז׳אנרים לפלייליסט הזה';
+      else if(rule){out=cov.filter(t=>!g(t).some(x=>rule.k.some(k=>x.indexOf(k)>-1)));vm=out.length?`${out.length} שירים לא נראים כמו "${p.name}"`:'הכול מתאים ✓'}
+      else{const c={};cov.forEach(t=>new Set(g(t).join(' ').split(' ')).forEach(w=>{if(w.length>2&&w!='music')c[w]=(c[w]||0)+1}));
+        const top=Object.keys(c).filter(w=>c[w]>=cov.length*.15).sort((a,b)=>c[b]-c[a]).slice(0,6);
+        out=cov.filter(t=>!g(t).join(' ').split(' ').some(w=>top.indexOf(w)>-1));
+        vm=out.length?`הווייב: ${top.slice(0,3).join(', ')} · ${out.length} שירים חורגים`:'הכול מתאים ✓'}
+    }
+    p.out=out;p.vm=vm;
+  }catch(e){p.vm='לא הצלחתי לבדוק: '+e.message}
+  S.busy=0;render();
+}
+/* ---------- artists ---------- */
+async function addMany(p,ts){for(let i=0;i<ts.length;i+=100){const c=ts.slice(i,i+100),b=JSON.stringify({uris:c.map(t=>'spotify:track:'+t.id)});
+  try{await api(`/playlists/${p.id}/items`,{method:'POST',body:b})}catch(e){await api(`/playlists/${p.id}/tracks`,{method:'POST',body:b})}
+  c.forEach(t=>{p.s.add(t.id);p.t.push(t)})}}
+async function remMany(p,ts){for(let i=0;i<ts.length;i+=100){const c=ts.slice(i,i+100);
+  try{await api(`/playlists/${p.id}/items`,{method:'DELETE',body:JSON.stringify({items:c.map(t=>({uri:'spotify:track:'+t.id}))})})}
+  catch(e){await api(`/playlists/${p.id}/tracks`,{method:'DELETE',body:JSON.stringify({tracks:c.map(t=>({uri:'spotify:track:'+t.id}))})})}
+  c.forEach(t=>p.s.delete(t.id))}p.t=p.t.filter(t=>p.s.has(t.id))}
+async function collect(){
+  const a=S.A[S.art];if(!a||S.busy)return;const name=$('#an').value.trim()||a.n,mv=$('#mv').checked,ts=Object.values(a.t);
+  let p=S.main.find(x=>x.name==name);const others=mv?S.main.filter(x=>x!==p&&ts.some(t=>x.s.has(t.id))):[];
+  if(!confirm(`לאסוף ${ts.length} שירים של ${a.n} לפלייליסט "${name}"`+(mv?` ולהסיר אותם מ-${others.length} פלייליסטים אחרים`:'')+'?'))return;
+  S.busy=1;
+  try{if(!p){p=await mk(name);S.pls.push(p)}
+    await addMany(p,ts.filter(t=>!p.s.has(t.id)));let fail=0;
+    for(const o of others){try{await remMany(o,ts.filter(t=>o.s.has(t.id)))}catch(e){fail++}}
+    recalc();toast(fail?`נאסף. ${fail} פלייליסטים לא ניתנים לעריכה`:'נאסף ✓')}
+  catch(e){toast('שגיאה: '+e.message,1)}
+  S.busy=0;render();
+}
+async function addMiss(pid){
+  const p=S.pls.find(x=>x.id==pid),a=p&&S.A[p.name.toLowerCase().trim()];if(!a||S.busy)return;
+  const m=Object.values(a.t).filter(t=>!p.s.has(t.id));if(!confirm(`להוסיף ${m.length} שירים של ${a.n} ל"${p.name}"?`))return;
+  S.busy=1;try{await addMany(p,m);recalc();toast('נוסף ✓')}catch(e){toast('שגיאה: '+e.message,1)}S.busy=0;render();
+}
+const pickArt=k=>`S.art=decodeURIComponent('${encodeURIComponent(k)}');render()`;
+function viewArt(){
+  const miss=[];S.main.forEach(p=>{const k=p.name.toLowerCase().trim(),a=S.A[k];if(a&&a.c>=3){const m=Object.keys(a.t).filter(i=>!p.s.has(i));if(m.length)miss.push({p,k,m})}});
+  const mh=miss.length&&!S.art?`<h2>פלייליסטי אמן שחסרים בהם שירים</h2>`+miss.map(x=>`<div class="card"><div class="top"><b>${esc(x.p.name)}</b><span class="mut">חסרים ${x.m.length}</span></div><div class="tags" style="margin-bottom:0"><button class="chip sm" onclick="addMiss('${x.p.id}')">הוסף את כולם</button><button class="chip sm" onclick="${pickArt(x.k)}">איפה הם?</button></div></div>`).join(''):'';
+  const q=S.aq.toLowerCase().trim(),ms=q?Object.keys(S.A).filter(k=>k.indexOf(q)>-1).sort((a,b)=>S.A[b].c-S.A[a].c).slice(0,12):[];
+  const head=`<div class="card"><input placeholder="חפש אמן…" value="${esc(S.aq)}" onchange="S.aq=this.value;S.art='';render()">
+   <div class="tags">${ms.map(k=>`<button class="chip ${k==S.art?'on':''}" onclick="${pickArt(k)}">${esc(S.A[k].n)}<small>${S.A[k].c}</small></button>`).join('')}</div>${q&&!ms.length?'<div class="mut">לא נמצא אמן כזה</div>':''}</div>`;
+  const a=S.A[S.art];if(!a)return head+mh;
+  const ts=Object.values(a.t),loc=t=>S.pls.filter(p=>p.s.has(t.id)),sp={};ts.forEach(t=>loc(t).forEach(p=>{if(!p.shz&&!p.liked)sp[p.id]=1}));
+  const home=S.main.find(p=>p.name.toLowerCase().trim()==S.art);
+  return head+`<div class="card"><b>${ts.length} שירים · פזורים ב-${Object.keys(sp).length} פלייליסטים</b>
+   <div class="fl"><input id="an" value="${esc(home?home.name:a.n)}"></div>
+   <label><input type="checkbox" id="mv">גם להסיר מכל הפלייליסטים האחרים (העברה)</label>
+   <button class="btn yes" style="width:100%;margin:10px 0 0" onclick="collect()">אסוף לפלייליסט</button>
+   <div class="mut" style="margin-top:8px">אם קיים פלייליסט בשם הזה, השירים יתווספו אליו. אחרת ייווצר חדש. לפלייליסט נפרד, שנה את השם.</div></div>`
+   +ts.slice(0,120).map(t=>`<div class="card"><b>${esc(t.n)}</b><div class="mut">${esc(t.a)}</div><div class="rec">${loc(t).map(p=>esc(p.name)).join(' · ')||'לא נמצא בשום מקום'}</div></div>`).join('');
+}
 function render(){
-  const y=scrollY,v={ov:viewOv,du:viewDup,so:viewSort}[S.tab]();
+  const y=scrollY,v={ov:viewOv,ar:viewArt,du:viewDup,so:viewSort}[S.tab]();
   const tm=S.t0?new Date(S.t0).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'';
   $('#app').innerHTML=`<header><div><h1>🎧 Playlist Sorter</h1><span class="mut">${S.main.length} פלייליסטים · עודכן ${tm}</span></div><button class="btn sm" onclick="load(true)">↻ רענן</button></header>
-  <div class="tabs">${[['ov','סקירה'],['du','כפילויות'],['so','מיון']].map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${n}</button>`).join('')}</div>${v}`;
+  <div class="tabs">${[['ov','סקירה'],['ar','אמנים'],['du','כפילויות'],['so','מיון']].map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${n}</button>`).join('')}</div>${v}`;
   const c=$('#sw');if(c&&!S.pick){let x=0;c.ontouchstart=e=>{x=e.touches[0].clientX};c.ontouchend=e=>{const d=e.changedTouches[0].clientX-x;if(Math.abs(d)>100)d>0?keep():go('rej')}}
   scrollTo(0,y);
 }
