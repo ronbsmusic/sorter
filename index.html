@@ -5,65 +5,70 @@
 <style>
 :root{--bg:#0e0f11;--card:#17191c;--line:#26292e;--fg:#f1f2f4;--mut:#8b919a;--g:#1ed760;--w:#ffb454;--r:#ff6b6b}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,system-ui,sans-serif;padding:max(16px,env(safe-area-inset-top)) 16px 90px}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,system-ui,sans-serif;padding:16px 16px 90px}
 main{max-width:720px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:center;margin:6px 0 14px}
-header h1{font-size:20px;margin:0}header span{color:var(--mut);font-size:13px}
-.tabs{display:flex;background:var(--card);border-radius:14px;padding:4px;gap:4px;margin-bottom:14px;position:sticky;top:8px;z-index:5;border:1px solid var(--line)}
+header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 12px}
+h1{font-size:20px;margin:0}h2{font-size:13px;color:var(--mut);margin:20px 4px 8px;font-weight:600}
+.tabs{display:flex;background:var(--card);border-radius:14px;padding:4px;margin-bottom:14px;position:sticky;top:8px;z-index:5;border:1px solid var(--line)}
 .tabs button{flex:1;border:0;background:none;color:var(--mut);padding:11px;border-radius:10px;font:600 15px inherit;cursor:pointer}
 .tabs button.on{background:var(--g);color:#06150b}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-h2{font-size:13px;letter-spacing:.04em;color:var(--mut);margin:20px 4px 8px;font-weight:600}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.tiles{display:flex;margin:0 -5px 8px}.tile{flex:1;margin:0 5px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 6px;text-align:center}
 .tile b{display:block;font-size:26px}.tile span{color:var(--mut);font-size:12px}
-.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
-.row:last-child{border:0}.mut{color:var(--mut);font-size:13px}.warn{color:var(--w)}
-.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:6px 0 2px}.bar i{display:block;height:100%;background:var(--g)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.sc{min-width:42px;text-align:center;border-radius:10px;padding:2px 10px;color:#000;font-weight:800}
+.mut{color:var(--mut);font-size:13px}.rec{margin-top:8px;font-size:14px;line-height:1.55}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%}
 .song{font-size:22px;font-weight:700;line-height:1.25}.art{color:var(--mut);margin:2px 0 12px}
 iframe{border:0;width:100%;height:152px;border-radius:12px;background:#000}
-.tags{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
-.chip{min-height:48px;padding:0 16px;border-radius:24px;border:1.5px solid #3a3f46;background:#1f2226;color:var(--fg);font:600 16px inherit;cursor:pointer;display:flex;align-items:center;gap:8px}
-.chip small{color:var(--mut);font-weight:400}.chip.on{background:var(--g);border-color:var(--g);color:#06150b}.chip.on small{color:#0b3a1c}
-.act{display:flex;gap:10px}.btn{flex:1;min-height:50px;border-radius:14px;border:1.5px solid #3a3f46;background:#1f2226;color:var(--fg);font:600 16px inherit;cursor:pointer}
-.btn.pri{background:var(--fg);color:#000;border-color:var(--fg)}.btn.sm{flex:none;min-height:40px;padding:0 14px;font-size:14px}
-input,select{font:16px inherit;background:#1f2226;color:var(--fg);border:1.5px solid #3a3f46;border-radius:12px;padding:10px 12px;min-height:44px;width:100%}
-details{margin-top:10px}summary{color:var(--mut);cursor:pointer;padding:8px 0}
-.flex{display:flex;gap:8px;margin:8px 0}code{background:#22262b;padding:3px 8px;border-radius:8px;direction:ltr;display:inline-block;word-break:break-all}
-ol{padding-inline-start:20px;color:var(--mut)}label{display:flex;gap:10px;align-items:center;color:var(--mut);font-size:14px}
-label input{width:20px;min-height:20px}
-#toast{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,30px);background:#fff;color:#000;padding:12px 18px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;max-width:90%;z-index:9}
+.tags{margin:12px -4px}.chip{margin:4px;min-height:44px;padding:0 14px;border-radius:22px;border:1.5px solid #3a3f46;background:#1f2226;color:var(--fg);font:600 15px inherit;cursor:pointer}
+.chip small{color:var(--mut);font-weight:400;margin-right:6px}.chip.on{background:var(--g);border-color:var(--g);color:#06150b}.chip.on small{color:#0b3a1c}
+.chip.sm{min-height:34px;font-size:13px;padding:0 10px}
+.act{display:flex}.btn{flex:1;margin:0 4px;min-height:54px;border-radius:14px;border:1.5px solid #3a3f46;background:#1f2226;color:var(--fg);font:700 17px inherit;cursor:pointer}
+.btn.no{color:var(--r);border-color:var(--r)}.btn.yes{background:var(--g);border-color:var(--g);color:#06150b}.btn.sm{flex:none;min-height:40px;padding:0 14px;font-size:14px;margin:0}
+.btn[disabled]{opacity:.35}
+input,select,textarea{font:16px inherit;background:#1f2226;color:var(--fg);border:1.5px solid #3a3f46;border-radius:12px;padding:10px 12px;min-height:44px;width:100%}
+textarea{height:80px;direction:ltr;font-size:12px}.fl{display:flex;margin:8px 0}.fl>*+*{margin-right:8px}
+details summary{color:var(--mut);cursor:pointer;padding:6px 0}code{background:#22262b;padding:3px 8px;border-radius:8px;direction:ltr;display:inline-block;word-break:break-all}
+label{display:flex;align-items:center;color:var(--mut);font-size:14px;margin-top:8px}label input{width:20px;min-height:20px;margin-left:10px}
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,30px);background:#fff;color:#000;padding:12px 18px;border-radius:14px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;max-width:90%;z-index:9}
 #toast.show{opacity:1;transform:translate(-50%,0)}#toast.err{background:var(--r);color:#fff}
 </style></head><body><main><div id="app"></div></main><div id="toast"></div>
 <script>
-const LS=localStorage,$=s=>document.querySelector(s);
-const S={tab:'ov',cur:null,only:true,pls:[],busy:0,last:null,
- tags:JSON.parse(LS.tags||'["צרפתית","נסיעה לילית","חורף ❄️"]'),skip:JSON.parse(LS.skip||'[]')};
-const save=()=>{LS.tags=JSON.stringify(S.tags);LS.skip=JSON.stringify(S.skip)};
+const LS=localStorage,$=s=>document.querySelector(s),TOK='https://accounts.spotify.com/api/token';
+const J=(k,d)=>{try{return JSON.parse(LS[k]||d)}catch(e){return JSON.parse(d)}};
+const S={tab:'ov',pls:[],main:[],W:{},info:{},cur:null,pick:false,only:true,busy:0,hist:[],dn:40,q:'',src:'',t0:0,rej:J('rej','{}'),skp:J('skp','{}')};
+const save=()=>{LS.rej=JSON.stringify(S.rej);LS.skp=JSON.stringify(S.skp)};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const REDIR=location.origin+location.pathname;
-const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-let tt;function toast(m,e){const t=$('#toast');t.textContent=m;t.className='show'+(e?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2200)}
-const msg=t=>$('#app').innerHTML=`<div class="card">${esc(t)}</div>`;
+const REDIR=location.origin+location.pathname,sleep=ms=>new Promise(z=>setTimeout(z,ms));
+const b64=b=>btoa(String.fromCharCode.apply(null,new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+let tt;function toast(m,e){const t=$('#toast');t.textContent=m;t.className='show'+(e?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='',2400)}
+const msg=(t,btn)=>$('#app').innerHTML=`<div class="card">${esc(t)}${btn?'<p><button class="btn sm" onclick="reset()">התחבר מחדש</button></p>':''}</div>`;
+function reset(){LS.removeItem('tok');LS.removeItem('rt');location=REDIR}
 
+/* ---------- auth ---------- */
+async function tokReq(p){
+  const r=await fetch(TOK,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(p)});
+  const j=await r.json();if(!j.access_token)throw Error(j.error_description||j.error||'auth');
+  LS.tok=j.access_token;LS.exp=Date.now()+(j.expires_in-60)*1000;if(j.refresh_token)LS.rt=j.refresh_token;
+}
+async function ensure(){if(!LS.tok||Date.now()>+LS.exp){if(!LS.rt)throw Error('לא מחובר');await tokReq({client_id:LS.cid,grant_type:'refresh_token',refresh_token:LS.rt})}}
 async function login(){
-  LS.cid=$('#cid').value.trim();
-  const v=b64(crypto.getRandomValues(new Uint8Array(48)));LS.ver=v;
+  LS.cid=$('#cid').value.trim();const v=b64(crypto.getRandomValues(new Uint8Array(48)));LS.ver=v;
   const ch=b64(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(v)));
   location=`https://accounts.spotify.com/authorize?`+new URLSearchParams({client_id:LS.cid,response_type:'code',redirect_uri:REDIR,
    scope:'playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public',code_challenge_method:'S256',code_challenge:ch});
 }
-async function token(code){
-  const r=await fetch('https://accounts.spotify.com/api/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:new URLSearchParams({client_id:LS.cid,grant_type:'authorization_code',code,redirect_uri:REDIR,code_verifier:LS.ver})});
-  const j=await r.json();if(!j.access_token)throw Error(JSON.stringify(j));
-  LS.tok=j.access_token;LS.exp=Date.now()+(j.expires_in-60)*1000;history.replaceState({},'',REDIR);
+async function useCode(){
+  try{const o=JSON.parse(atob($('#cc').value.trim()));LS.cid=o.c;LS.rt=o.r;LS.removeItem('tok');msg('מתחבר…');await load()}
+  catch(e){msg('הקוד לא תקין: '+e.message,1)}
 }
 async function api(p,o={}){
-  for(;;){
+  for(let k=0;;k++){
+    await ensure();
     const r=await fetch(p.startsWith('http')?p:'https://api.spotify.com/v1'+p,{...o,headers:{Authorization:'Bearer '+LS.tok,'Content-Type':'application/json'}});
-    if(r.status==429){await new Promise(z=>setTimeout(z,(+r.headers.get('Retry-After')||2)*1000));continue}
-    if(r.status==401){LS.removeItem('tok');throw Error('החיבור פג, רענן את הדף')}
+    if(r.status==429){await sleep((+r.headers.get('Retry-After')||2)*1000);continue}
+    if(r.status==401&&k<2){LS.exp=0;continue}
     if(!r.ok)throw Error(r.status);
     return r.status==204?null:r.json();
   }
@@ -73,16 +78,40 @@ async function plTracks(id){
   let it;try{it=await pages(`/playlists/${id}/items?limit=100`)}catch(e){it=await pages(`/playlists/${id}/tracks?limit=100`)}
   return it.map(x=>x&&(x.item||x.track)).filter(t=>t&&t.id&&t.type!=='episode').map(t=>({id:t.id,n:t.name,a:(t.artists||[]).map(a=>a.name).join(', ')}));
 }
-async function load(){
-  const pls=await pages('/me/playlists?limit=50');S.pls=[];
-  for(let i=0;i<pls.length;i++){const p=pls[i];if(!p)continue;msg(`טוען ${i+1}/${pls.length} · ${p.name}`);
-    let t=[];try{t=await plTracks(p.id)}catch(e){}
-    S.pls.push({id:p.id,name:p.name,t,s:new Set(t.map(x=>x.id)),shz:/shazam/i.test(p.name)})}
-  render();
-}
-const where=()=>{const w={};S.pls.filter(p=>!p.shz).forEach(p=>p.t.forEach(t=>(w[t.id]??=new Set()).add(p.name)));return w};
-const plOf=g=>S.pls.find(p=>!p.shz&&p.name==g);
 
+/* ---------- data ---------- */
+async function load(quiet){
+  S.busy=1;
+  try{
+    const pls=(await pages('/me/playlists?limit=50')).filter(Boolean),out=[];let i=0,n=0;
+    await Promise.all([0,1,2,3].map(async()=>{while(i<pls.length){const k=i++,p=pls[k],o={id:p.id,name:p.name,t:[],shz:/shazam/i.test(p.name)};
+      try{o.t=await plTracks(p.id)}catch(e){o.err=e.message}
+      o.s=new Set(o.t.map(x=>x.id));out[k]=o;n++;if(!quiet)msg(`טוען ${n}/${pls.length} · ${p.name}`)}}));
+    S.pls=out;S.t0=Date.now();recalc();
+  }catch(e){S.busy=0;if(!quiet)return msg('שגיאה: '+e.message,1);toast('הרענון נכשל',1)}
+  S.busy=0;render();
+}
+function recalc(){
+  const m=S.main=S.pls.filter(p=>!p.shz);S.W={};S.info={};
+  m.forEach(p=>p.t.forEach(t=>{(S.W[t.id]=S.W[t.id]||new Set()).add(p);S.info[t.id]=t}));
+  m.forEach(p=>{let ov=0,bn=0;p.best=null;p.t.forEach(t=>{if(S.W[t.id].size>1)ov++});
+    m.forEach(q=>{if(q===p)return;let n=0;p.s.forEach(x=>{if(q.s.has(x))n++});if(n>bn){bn=n;p.best=q.name}});
+    p.ovf=p.t.length?ov/p.t.length:0});
+}
+function health(p){
+  const n=p.t.length,pc=Math.round(p.ovf*100);
+  let s=100-Math.min(60,Math.max(0,n-120)/6)-p.ovf*40-(n<10?20:0);s=Math.max(0,Math.round(s));
+  const r=[];
+  if(n>350)r.push(`ענק: ${n} שירים. מומלץ לפצל ל-${Math.ceil(n/120)} פלייליסטים של כ-120 שירים (לפי וייב או תקופה), ולהשאיר בראשון רק את הליבה.`);
+  else if(n>200)r.push(`ארוך (${n}). כדאי לפצל לשניים לפי וייב, או להוציא שירים שלא שמעת הרבה זמן.`);
+  if(p.ovf>.4&&p.best)r.push(`${pc}% מהשירים כבר נמצאים בפלייליסטים אחרים, בעיקר ב"${p.best}". שקול לאחד אותם, או להשאיר כל שיר במקום אחד בלבד (לשונית כפילויות).`);
+  else if(p.ovf>.2)r.push(`${pc}% מהשירים מופיעים גם בפלייליסטים אחרים. בדוק בלשונית כפילויות מה אפשר להסיר.`);
+  if(n<15)r.push('קטן מאוד. שקול למזג עם פלייליסט דומה'+(p.best?` (למשל "${p.best}")`:'')+'.');
+  if(!r.length)r.push('במצב טוב, אין צורך בשינוי.');
+  return{s,r,c:s>=80?'#1ed760':s>=60?'#a3d95c':s>=40?'#ffb454':'#ff6b6b',l:s>=80?'מצוין':s>=60?'טוב':s>=40?'דורש שיפור':'מומלץ לפצל או לשנות'};
+}
+
+/* ---------- playlist edits ---------- */
 async function mk(name){
   const body=JSON.stringify({name,public:false,description:'Playlist Sorter'});let p;
   try{p=await api('/me/playlists',{method:'POST',body})}catch(e){const me=await api('/me');p=await api(`/users/${me.id}/playlists`,{method:'POST',body})}
@@ -95,75 +124,99 @@ async function rem(p,t){const u='spotify:track:'+t.id;
   try{await api(`/playlists/${p.id}/items`,{method:'DELETE',body:JSON.stringify({items:[{uri:u}]})})}
   catch(e){await api(`/playlists/${p.id}/tracks`,{method:'DELETE',body:JSON.stringify({tracks:[{uri:u}]})})}
   p.s.delete(t.id);p.t=p.t.filter(x=>x.id!=t.id)}
-async function tg(i){
-  const g=S.tags[i],t=S.cur;if(!t||S.busy)return;S.busy=1;
-  try{let p=plOf(g);if(!p){p=await mk(g);S.pls.push(p)}
-    const on=p.s.has(t.id);await(on?rem(p,t):add(p,t));S.last={p,t,on};
-    toast(on?`הוסר מ-${g}`:`נוסף ל-${g} ✓`)}
-  catch(e){toast('שגיאה: '+e.message,1)}
-  S.busy=0;render();
+async function rmFrom(tid,pid){
+  const p=S.pls.find(x=>x.id==pid),t=S.info[tid];if(!p||!t||S.busy)return;
+  if(!confirm(`להסיר את "${t.n}" מהפלייליסט "${p.name}"?`))return;
+  S.busy=1;try{await rem(p,t);recalc();toast('הוסר ✓')}catch(e){toast('שגיאה: '+e.message,1)}S.busy=0;render();
 }
-async function undo(){
-  const l=S.last;if(!l||S.busy)return;S.busy=1;
-  try{await(l.on?add(l.p,l.t):rem(l.p,l.t));S.cur=l.t;S.last=null;toast('בוטל')}catch(e){toast('שגיאה: '+e.message,1)}
-  S.busy=0;render();
+async function tgl(pid){
+  const p=S.pls.find(x=>x.id==pid),t=S.cur;if(!p||!t||S.busy)return;S.busy=1;
+  try{const on=p.s.has(t.id);await(on?rem(p,t):add(p,t));recalc();toast(on?`הוסר מ-${p.name}`:`נוסף ל-${p.name} ✓`)}catch(e){toast('שגיאה: '+e.message,1)}
+  S.busy=0;$('#pk').innerHTML=pickHTML();
 }
-function queue(){
-  const w=where();let src=S.pls.filter(p=>p.shz).flatMap(p=>p.t);if(!src.length)src=S.pls.flatMap(p=>p.t);
-  const seen=new Set();
-  return src.filter(t=>{if(seen.has(t.id))return false;seen.add(t.id);return !S.skip.includes(t.id)&&(!S.only||!w[t.id])});
+async function newPl(){
+  const v=$('#np').value.trim(),t=S.cur;if(!v||!t||S.busy)return;S.busy=1;
+  try{const p=await mk(v);S.pls.push(p);await add(p,t);recalc();toast('נוצר ונוסף ✓')}catch(e){toast('שגיאה: '+e.message,1)}
+  S.busy=0;$('#pk').innerHTML=pickHTML();
 }
-function nxt(sk){const t=S.cur;if(t&&(sk||!S.tags.some(g=>plOf(g)?.s.has(t.id))))S.skip.push(t.id);S.cur=null;S.last=null;save();render()}
-function addT(v){v=(v||$('#nt').value).trim();if(v&&!S.tags.includes(v)){S.tags.push(v);save()}render()}
-function rmT(i){S.tags.splice(i,1);save();render()}
 
-function viewOv(){
-  const main=S.pls.filter(p=>!p.shz),w=where(),ids=Object.keys(w),multi=ids.filter(i=>w[i].size>1).length;
-  const shz=[...new Map(S.pls.filter(p=>p.shz).flatMap(p=>p.t).map(t=>[t.id,t])).values()];
-  const un=shz.filter(t=>!w[t.id]).length;
-  const sets=main.map(p=>p.s),pairs=[];
-  for(let i=0;i<main.length;i++)for(let j=i+1;j<main.length;j++){let n=0;for(const x of sets[i])if(sets[j].has(x))n++;
-    const m=Math.min(sets[i].size,sets[j].size);if(n>=10&&n/m>=.25)pairs.push([main[i].name,main[j].name,n,n/m])}
-  pairs.sort((a,b)=>b[3]-a[3]);const mx=Math.max(1,...main.map(p=>p.t.length));
-  const hot=ids.filter(i=>w[i].size>=3).slice(0,10).map(i=>{const t=main.flatMap(p=>p.t).find(t=>t.id==i);return`<div class="row"><span>${esc(t.n)} <span class="mut">${esc(t.a)}</span></span><span>${w[i].size}×</span></div>`}).join('');
-  return `<div class="tiles"><div class="tile"><b>${ids.length}</b><span>שירים ייחודיים</span></div><div class="tile"><b>${multi}</b><span>בכמה פלייליסטים</span></div><div class="tile"><b>${un}</b><span>ב-Shazam לא ממוינים</span></div></div>
-  <h2>פלייליסטים לפי גודל</h2><div class="card">${[...main].sort((a,b)=>b.t.length-a.t.length).map(p=>
-   `<div style="padding:6px 0"><div class="row" style="border:0;padding:0"><span>${esc(p.name)}</span><span class="${p.t.length>=150?'warn':'mut'}">${p.t.length}${p.t.length>=150?' · ארכיון?':''}</span></div><div class="bar"><i style="width:${p.t.length/mx*100}%"></i></div></div>`).join('')}</div>
-  <h2>חפיפות · מועמדים לאיחוד</h2><div class="card">${pairs.slice(0,15).map(p=>`<div class="row"><span>${esc(p[0])} ↔ ${esc(p[1])}</span><span class="mut">${p[2]} · ${Math.round(p[3]*100)}%</span></div>`).join('')||'<span class="mut">אין חפיפות משמעותיות</span>'}</div>
-  <h2>שירים ב-3 פלייליסטים ומעלה</h2><div class="card">${hot||'<span class="mut">אין</span>'}</div>`;
+/* ---------- sorting (tinder) ---------- */
+function source(){return S.pls.find(p=>p.id==S.src)||S.pls.find(p=>p.shz)||S.pls[0]}
+function queue(){
+  const src=source(),seen={};if(!src)return[];
+  return src.t.filter(t=>{if(seen[t.id]||S.rej[t.id]||S.skp[t.id])return false;seen[t.id]=1;return !(S.only&&src.shz)||!S.W[t.id]});
 }
+const go=k=>{const t=S.cur;if(!t)return;if(k=='rej')S.rej[t.id]=1;else S.skp[t.id]=1;S.hist.push({t});S.cur=null;S.pick=false;save();render()};
+const keep=()=>{S.pick=true;render()};
+function done(){const t=S.cur;if(t&&!S.W[t.id]){S.skp[t.id]=1;S.hist.push({t})}S.cur=null;S.pick=false;save();render()}
+function undo(){const h=S.hist.pop();if(!h)return;delete S.rej[h.t.id];delete S.skp[h.t.id];S.cur=h.t;S.pick=false;save();render()}
+const pickHTML=()=>{const t=S.cur;return`<div class="mut">הוסף ל… (אפשר כמה)</div><div class="tags">${S.main.map(p=>`<button class="chip ${p.s.has(t.id)?'on':''}" onclick="tgl('${p.id}')">${esc(p.name)}<small>${p.t.length}</small></button>`).join('')}</div>
+ <div class="fl"><input id="np" placeholder="פלייליסט חדש…"><button class="btn sm" onclick="newPl()">צור והוסף</button></div>`};
 function viewSort(){
-  const q=queue();if(!S.cur)S.cur=q[0]||null;const t=S.cur;
-  const w=where(),shz=S.pls.filter(p=>p.shz).flatMap(p=>p.t),N=new Set(shz.map(x=>x.id)).size,done=new Set(shz.filter(x=>w[x.id]).map(x=>x.id)).size;
-  const head=`<div class="card"><div class="mut">מוינו ${done} מתוך ${N} · נותרו ${q.length}</div><div class="bar"><i style="width:${N?done/N*100:0}%"></i></div>
-   <label style="margin-top:10px"><input type="checkbox" ${S.only?'checked':''} onchange="S.only=this.checked;S.cur=null;render()">רק שירים שאינם באף פלייליסט</label></div>`;
-  const mgr=`<details class="card"><summary>ניהול תגיות</summary>
-   <div class="flex"><select id="ex"><option value="">בחר פלייליסט קיים כתג…</option>${S.pls.filter(p=>!p.shz&&!S.tags.includes(p.name)).map(p=>`<option>${esc(p.name)}</option>`).join('')}</select><button class="btn sm" onclick="addT($('#ex').value)">הוסף</button></div>
-   <div class="flex"><input id="nt" placeholder="תג חדש (ייווצר פלייליסט בלחיצה הראשונה)"><button class="btn sm" onclick="addT()">צור</button></div>
-   <div class="tags">${S.tags.map((g,i)=>`<button class="chip" onclick="rmT(${i})">${esc(g)} ✕</button>`).join('')}</div>
-   <div class="mut">שירים שדילגת עליהם: ${S.skip.length} <button class="btn sm" onclick="S.skip=[];S.cur=null;render()">אפס</button></div></details>`;
-  if(!t)return head+'<div class="card" style="text-align:center">🎉 אין עוד שירים למיון</div>'+mgr;
-  return head+`<div class="card"><div class="song">${esc(t.n)}</div><div class="art">${esc(t.a)}</div>
-   <iframe src="https://open.spotify.com/embed/track/${t.id}" allow="encrypted-media" loading="lazy"></iframe>
-   <div class="tags">${S.tags.map((g,i)=>{const p=plOf(g);return`<button class="chip ${p?.s.has(t.id)?'on':''}" onclick="tg(${i})">${i<9?`<small>${i+1}</small>`:''}${esc(g)}${p?`<small>${p.t.length}</small>`:''}</button>`}).join('')}</div>
-   <div class="act"><button class="btn" onclick="undo()" ${S.last?'':'disabled style="opacity:.4"'}>↩ בטל</button><button class="btn" onclick="nxt(true)">דלג</button><button class="btn pri" onclick="nxt()">הבא ←</button></div></div>`+mgr;
+  const src=source(),q=queue();if(!S.cur)S.cur=q[0]||null;const t=S.cur;
+  const sel=`<select onchange="S.src=this.value;S.cur=null;render()">${S.pls.map(p=>`<option value="${p.id}" ${src&&p.id==src.id?'selected':''}>${esc(p.name)} (${p.t.length})</option>`).join('')}</select>
+   ${src&&src.shz?`<label><input type="checkbox" ${S.only?'checked':''} onchange="S.only=this.checked;S.cur=null;render()">רק שירים שלא נמצאים באף פלייליסט</label>`:''}`;
+  const head=`<div class="card"><div class="mut">מקור המיון · נותרו ${q.length}${src&&src.t.length?` מתוך ${src.t.length}`:''}</div>${sel}${src&&src.err?`<p class="mut" style="color:var(--w)">לא הצלחתי לקרוא את הפלייליסט הזה (שגיאה ${esc(src.err)}). ייתכן שספוטיפיי חוסמת גישה אליו. בחר פלייליסט אחר.</p>`:''}</div>`;
+  if(!t)return head+'<div class="card" style="text-align:center">🎉 אין עוד שירים למיון במקור הזה</div>';
+  const inn=[...(S.W[t.id]||[])].map(p=>esc(p.name)).join(' · ');
+  return head+`<div class="card" id="sw"><div class="song">${esc(t.n)}</div><div class="art">${esc(t.a)}</div>
+  <iframe src="https://open.spotify.com/embed/track/${t.id}" allow="encrypted-media"></iframe>
+  ${inn?`<div class="mut" style="margin-top:8px">כבר נמצא ב: ${inn}</div>`:''}
+  ${S.pick?`<div id="pk">${pickHTML()}</div><button class="btn yes" style="width:100%;margin:8px 0 0" onclick="done()">סיום · הבא ←</button>`
+  :`<div class="act" style="margin-top:14px"><button class="btn no" onclick="go('rej')">✕ לא</button><button class="btn" onclick="go('skp')">דלג</button><button class="btn yes" onclick="keep()">♥ כן</button></div>
+  <div class="mut" style="text-align:center;margin-top:10px">אפשר גם להחליק: ימינה = כן · שמאלה = לא</div>`}
+  <div style="margin-top:8px"><button class="btn sm" onclick="undo()" ${S.hist.length?'':'disabled'}>↩ בטל</button></div></div>`;
+}
+
+/* ---------- other views ---------- */
+function viewOv(){
+  const ids=Object.keys(S.W),multi=ids.filter(i=>S.W[i].size>1).length,sz=S.pls.find(p=>p.shz);
+  const un=sz?Object.keys(sz.t.reduce((o,t)=>(o[t.id]=1,o),{})).filter(i=>!S.W[i]).length:0;
+  const bad=S.pls.filter(p=>p.err&&!p.shz);
+  const cards=S.main.map(p=>({p,h:health(p)})).sort((a,b)=>a.h.s-b.h.s).map(({p,h})=>
+   `<div class="card"><div class="top"><b>${esc(p.name)}</b><span class="sc" style="background:${h.c}">${h.s}</span></div>
+   <div class="mut">${p.t.length} שירים · ${Math.round(p.ovf*100)}% מופיעים גם במקום אחר · ${h.l}</div>
+   <div class="bar"><i style="width:${h.s}%;background:${h.c}"></i></div><div class="rec">${h.r.map(esc).join('<br>')}</div></div>`).join('');
+  const code=LS.rt?btoa(JSON.stringify({c:LS.cid,r:LS.rt})):'';
+  return `<div class="tiles"><div class="tile"><b>${ids.length}</b><span>שירים ייחודיים</span></div><div class="tile" onclick="S.tab='du';render()"><b>${multi}</b><span>ביותר מפלייליסט</span></div><div class="tile" onclick="S.tab='so';render()"><b>${un}</b><span>ב-Shazam לא ממוינים</span></div></div>
+  ${sz&&sz.err?`<div class="card mut" style="color:var(--w)">פלייליסט ה-Shazam לא נקרא (שגיאה ${esc(sz.err)}). במסך המיון אפשר לבחור מקור אחר.</div>`:''}
+  ${bad.length?`<div class="card mut">לא נקראו: ${bad.map(p=>esc(p.name)).join(', ')}</div>`:''}
+  <h2>ציון בריאות לכל פלייליסט · מהחלש לחזק</h2>${cards}
+  <details class="card"><summary>חיבור מכשיר נוסף (למשל האייפד הישן)</summary><p class="mut">העתק את הקוד והדבק אותו במסך החיבור של המכשיר השני, בלי להתחבר מחדש. הקוד פרטי, אל תשתף אותו.</p>
+  <textarea readonly id="cd" onclick="this.select()">${code}</textarea><p><button class="btn sm" onclick="cp()">העתק</button></p></details>`;
+}
+function cp(){const c=$('#cd');c.select();try{navigator.clipboard.writeText(c.value).then(()=>toast('הועתק ✓'))}catch(e){document.execCommand('copy');toast('הועתק ✓')}}
+function viewDup(){
+  let ids=Object.keys(S.W).filter(i=>S.W[i].size>1).sort((a,b)=>S.W[b].size-S.W[a].size);const d={};
+  ids.forEach(i=>{const k=Math.min(5,S.W[i].size);d[k]=(d[k]||0)+1});
+  const q=S.q.toLowerCase();if(q)ids=ids.filter(i=>(S.info[i].n+' '+S.info[i].a).toLowerCase().indexOf(q)>-1);
+  const rows=ids.slice(0,S.dn).map(i=>{const t=S.info[i],ps=[...S.W[i]];return`<div class="card"><div class="top"><b>${esc(t.n)}</b><span class="mut">${ps.length}×</span></div><div class="mut">${esc(t.a)}</div>
+   <div class="tags" style="margin-bottom:0">${ps.map(p=>`<button class="chip sm" onclick="rmFrom('${i}','${p.id}')">${esc(p.name)} ✕</button>`).join('')}</div></div>`}).join('');
+  return `<div class="card"><b>${ids.length}</b> שירים בכמה פלייליסטים<div class="mut">ב-2: ${d[2]||0} · ב-3: ${d[3]||0} · ב-4: ${d[4]||0} · ב-5+: ${d[5]||0}</div>
+  <div class="mut" style="margin-top:6px">לחיצה על שם פלייליסט מסירה ממנו את השיר (עם אישור).</div>
+  <input placeholder="חיפוש שיר או אמן…" value="${esc(S.q)}" onchange="S.q=this.value;S.dn=40;render()" style="margin-top:10px"></div>${rows}
+  ${ids.length>S.dn?`<button class="btn" style="width:100%;margin:0" onclick="S.dn+=40;render()">הצג עוד (${ids.length-S.dn})</button>`:''}`;
 }
 function render(){
-  const y=scrollY,v=S.tab=='ov'?viewOv():viewSort();
-  $('#app').innerHTML=`<header><h1>🎧 Playlist Sorter</h1><span>${S.pls.length} פלייליסטים</span></header>
-  <div class="tabs">${[['ov','סקירה'],['so','מיון']].map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${n}</button>`).join('')}</div>${v}`;
+  const y=scrollY,v={ov:viewOv,du:viewDup,so:viewSort}[S.tab]();
+  const tm=S.t0?new Date(S.t0).toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}):'';
+  $('#app').innerHTML=`<header><div><h1>🎧 Playlist Sorter</h1><span class="mut">${S.main.length} פלייליסטים · עודכן ${tm}</span></div><button class="btn sm" onclick="load(true)">↻ רענן</button></header>
+  <div class="tabs">${[['ov','סקירה'],['du','כפילויות'],['so','מיון']].map(([k,n])=>`<button class="${S.tab==k?'on':''}" onclick="S.tab='${k}';render()">${n}</button>`).join('')}</div>${v}`;
+  const c=$('#sw');if(c&&!S.pick){let x=0;c.ontouchstart=e=>{x=e.touches[0].clientX};c.ontouchend=e=>{const d=e.changedTouches[0].clientX-x;if(Math.abs(d)>100)d>0?keep():go('rej')}}
   scrollTo(0,y);
 }
-addEventListener('keydown',e=>{if(S.tab!='so'||['INPUT','SELECT'].includes(e.target.tagName))return;
-  if(/^[1-9]$/.test(e.key))tg(+e.key-1);else if(e.key=='Enter'||e.key=='ArrowLeft')nxt()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.t0&&!S.busy&&Date.now()-S.t0>180000)load(true)});
+
+/* ---------- start ---------- */
 (async()=>{
   const code=new URLSearchParams(location.search).get('code');
   try{
-    if(code){msg('מתחבר…');await token(code);await load()}
-    else if(LS.tok&&Date.now()<+LS.exp){msg('טוען…');await load()}
-    else $('#app').innerHTML=`<header><h1>🎧 Playlist Sorter</h1></header><div class="card"><h2 style="margin-top:0">חיבור חד-פעמי לספוטיפיי</h2>
-     <ol><li>ב-developer.spotify.com/dashboard צור אפליקציה</li><li>Redirect URI, בדיוק כך:<br><code>${esc(REDIR)}</code></li><li>הדבק כאן את ה-Client ID</li></ol>
-     <input id="cid" placeholder="Client ID" value="${esc(LS.cid||'')}" style="direction:ltr;margin-bottom:12px"><button class="btn pri" style="width:100%" onclick="login()">התחבר</button></div>`;
-  }catch(e){msg('שגיאה: '+e.message+' · רענן את הדף והתחבר שוב')}
+    if(code){msg('מתחבר…');await tokReq({client_id:LS.cid,grant_type:'authorization_code',code,redirect_uri:REDIR,code_verifier:LS.ver});history.replaceState({},'',REDIR);await load()}
+    else if(LS.rt||LS.tok){msg('טוען…');await load()}
+    else $('#app').innerHTML=`<header><h1>🎧 Playlist Sorter</h1></header><div class="card"><b>חיבור לספוטיפיי</b>
+     <p class="mut">ב-developer.spotify.com/dashboard צור אפליקציה עם Redirect URI:<br><code>${esc(REDIR)}</code></p>
+     <input id="cid" placeholder="Client ID" value="${esc(LS.cid||'')}" style="direction:ltr"><p><button class="btn yes" style="width:100%;margin:0" onclick="login()">התחבר</button></p></div>
+     <div class="card"><b>יש לך קוד חיבור ממכשיר אחר?</b><p class="mut">מתאים למכשירים ישנים שלא מצליחים להתחבר לספוטיפיי.</p><textarea id="cc" placeholder="הדבק כאן"></textarea><p><button class="btn" style="width:100%;margin:0" onclick="useCode()">חבר</button></p></div>`;
+  }catch(e){msg('שגיאה: '+e.message,1)}
 })();
 </script></body></html>
